@@ -11,11 +11,15 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
-// first do npm install request
-var request = require('request');
-var fs = require('fs');
+// // first do npm install request
+// var request = require('request');
+// var fs = require('fs');
+var http = require('http');
+//var results = [{roomname: 'room1', username: 'mala', message: 'hi' }]; 
 
-var handleRequest = function(request, response) {
+exports.handleRequest = function(request, response) {
+  var results = [{roomname: 'room1', username: 'mala', message: 'hi' }]; 
+  var messages = {results: results};
   // Request and Response come from node's http module.
   //
   // They include information about both the incoming request, such as
@@ -33,8 +37,8 @@ var handleRequest = function(request, response) {
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
   // The outgoing status.
-  var statusCode = 200;
-
+  var statusCode = null;
+  
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
 
@@ -42,12 +46,42 @@ var handleRequest = function(request, response) {
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = 'application/json'
+  headers['Content-Type'] = 'application/json';
   // was this before: 'text/plain';
- 
+  
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
-  response.writeHead(statusCode, headers);
+  // console.log(request); 
+  if (request.method === 'GET' && request.url === '/classes/messages') {
+   // request.pipe(response);
+    //response.statusCode = 200;
+    // //based on the stubs.js, we just need statusCode, not stubs.statusCode
+    // console.log('in if statement', request.method); 
+    // request.on('error', function(err) {
+    //   //console.log(err); 
+    //   //potentially only need on 'data' for POST method
+    // // }).on('data', function(chunk) {
+    // //   results.push(chunk);  
+    // }).on('end', function() {
+    statusCode = 200;
+    response.writeHead(statusCode, headers);
+      //JSON.stringify(results);
+      // response = Buffer.concat(results).toString();
+       //console.log(response.body); 
+      //console.log(JSON.stringify(Buffer)); 
+      //end is the data we are giving back to user 
+      //response.end(expects a string (Json.stringfy results;))
+    response.end(JSON.stringify(messages));
+     
+    //});
+
+
+  } else {
+    statusCode = 404;
+    response.writeHead(statusCode, headers);
+
+    response.end('Hello, World!'); 
+  }
 
 
 
@@ -58,8 +92,10 @@ var handleRequest = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end('Hello, World!');
+  
 };
+
+   
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
 // This code allows this server to talk to websites that
@@ -76,4 +112,6 @@ var defaultCorsHeaders = {
   'access-control-allow-headers': 'content-type, accept',
   'access-control-max-age': 10 // Seconds.
 };
+
+//exports.handleRequest = handleRequest; 
 
