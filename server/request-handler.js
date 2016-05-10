@@ -13,128 +13,48 @@ this file and include it in basic-server.js so that it actually works.
 **************************************************************/
 // // first do npm install request
 // var request = require('request');
-// var fs = require('fs');
+//  var fs = require('fs');
 var http = require('http');
 //var results = [{roomname: 'room1', username: 'mala', message: 'hi' }]; 
 
 exports.requestHandler = function(request, response) {
-  var results = [{roomname: 'room1', username: 'mala', message: 'hi' }]; 
-  var messages = {results: results};
-  // Request and Response come from node's http module.
-  //
-  // They include information about both the incoming request, such as
-  // headers and URL, and about the outgoing response, such as its status
-  // and content.
-  //
-  // Documentation for both request and response can be found in the HTTP section at
-  // http://nodejs.org/documentation/api/
+  var results = []; 
+  var body = {results: results};
 
-  // Do some basic logging.
-  //
-  // Adding more logging to your server can be an easy way to get passive
-  // debugging help, but you should always be careful about leaving stray
-  // console.logs in your code.
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
   // The outgoing status.
   var statusCode = null;
   
-  // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
 
-  // Tell the client we are sending them plain text.
-  //
-  // You will need to change this if you are sending something
-  // other than plain text, like JSON or HTML.
   headers['Content-Type'] = 'application/json';
-  // was this before: 'text/plain';
-  
-  // .writeHead() writes to the request line and headers of the response,
-  // which includes the status and all headers.
-  // console.log(request); 
+
   if (request.method === 'GET' && request.url === '/classes/messages') {
-   // request.pipe(response);
-    //response.statusCode = 200;
-    // //based on the stubs.js, we just need statusCode, not stubs.statusCode
-    // console.log('in if statement', request.method); 
-    // request.on('error', function(err) {
-    //   //console.log(err); 
-    //   //potentially only need on 'data' for POST method
-    // // }).on('data', function(chunk) {
-    // //   results.push(chunk);  
-    // }).on('end', function() {
     statusCode = 200;
     response.writeHead(statusCode, headers);
-      //JSON.stringify(results);
-      // response = Buffer.concat(results).toString();
-       //console.log(response.body); 
-      //console.log(JSON.stringify(Buffer)); 
-      //end is the data we are giving back to user 
-      //response.end(expects a string (Json.stringfy results;))
-    response.end(JSON.stringify(messages));
+    response.end(JSON.stringify(body));
+
+  } else if (request.method === 'POST' && request.url === '/classes/messages') {
+    var storage = [];
+    request.on('data', function(chunk) {
+      storage.push((chunk));  
+      
+    }).on('end', function() {
+      storage = Buffer.concat(storage).toString();
+      //console.log(JSON.parse(body));
+      body.results.push(JSON.parse(storage));
+      statusCode = 201;
+      response.writeHead(statusCode, headers);
+      response.end(JSON.stringify(body));
      
-    //});
-
-
-  } 
-  else {
+    });
+  } else {
     statusCode = 404;
     response.writeHead(statusCode, headers);
 
     response.end('Hello, World!'); 
   }
-
-
-///////////////////////////////////////////
-
-  if (request.method === 'POST' && request.url === '/classes/messages') {
-    var body = [];
-   // request.pipe(response);
-    //response.statusCode = 200;
-    // //based on the stubs.js, we just need statusCode, not stubs.statusCode
-    // console.log('in if statement', request.method); 
-     // request.on('error', function(err) {
-     //   console.log(err); 
-    //   //potentially only need on 'data' for POST method
-    request.on('data', function(chunk) {
-      body.push((chunk));  
-    }).on('end', function() {
-      body = Buffer.concat(body).toString();
-      messages.results.push(JSON.parse(body));
-      statusCode = 201;
-      response.writeHead(statusCode, headers);
-      //JSON.stringify(results);
-      // response = Buffer.concat(results).toString();
-       //console.log(response.body); 
-      //console.log(JSON.stringify(Buffer)); 
-      //end is the data we are giving back to user 
-      //response.end(expects a string (Json.stringfy results;))
-      //response.end(JSON.stringify(messages.results));
-     
-    });
-
-  // else {
-  //   statusCode = 404;
-  //   response.writeHead(statusCode, headers);
-
-  //   response.end('Hello, World!'); 
-  // }
-
-  }
-  // else {
-  //   statusCode = 404;
-  //   response.writeHead(statusCode, headers);
-
-  //   response.end('Hello, World!'); 
-  // }
-
-  // Make sure to always call response.end() - Node may not send
-  // anything back to the client until you do. The string you pass to
-  // response.end() will be the body of the response - i.e. what shows
-  // up in the browser.
-  //
-  // Calling .end "flushes" the response's internal buffer, forcing
-  // node to actually send all the data over to the client.
   
 };
 
