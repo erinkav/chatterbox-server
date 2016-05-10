@@ -17,7 +17,7 @@ this file and include it in basic-server.js so that it actually works.
 var http = require('http');
 //var results = [{roomname: 'room1', username: 'mala', message: 'hi' }]; 
 
-exports.handleRequest = function(request, response) {
+exports.requestHandler = function(request, response) {
   var results = [{roomname: 'room1', username: 'mala', message: 'hi' }]; 
   var messages = {results: results};
   // Request and Response come from node's http module.
@@ -76,7 +76,8 @@ exports.handleRequest = function(request, response) {
     //});
 
 
-  } else {
+  } 
+  else {
     statusCode = 404;
     response.writeHead(statusCode, headers);
 
@@ -84,6 +85,48 @@ exports.handleRequest = function(request, response) {
   }
 
 
+///////////////////////////////////////////
+
+  if (request.method === 'POST' && request.url === '/classes/messages') {
+    var body = [];
+   // request.pipe(response);
+    //response.statusCode = 200;
+    // //based on the stubs.js, we just need statusCode, not stubs.statusCode
+    // console.log('in if statement', request.method); 
+     // request.on('error', function(err) {
+     //   console.log(err); 
+    //   //potentially only need on 'data' for POST method
+    request.on('data', function(chunk) {
+      body.push((chunk));  
+    }).on('end', function() {
+      body = Buffer.concat(body).toString();
+      messages.results.push(JSON.parse(body));
+      statusCode = 201;
+      response.writeHead(statusCode, headers);
+      //JSON.stringify(results);
+      // response = Buffer.concat(results).toString();
+       //console.log(response.body); 
+      //console.log(JSON.stringify(Buffer)); 
+      //end is the data we are giving back to user 
+      //response.end(expects a string (Json.stringfy results;))
+      //response.end(JSON.stringify(messages.results));
+     
+    });
+
+  // else {
+  //   statusCode = 404;
+  //   response.writeHead(statusCode, headers);
+
+  //   response.end('Hello, World!'); 
+  // }
+
+  }
+  // else {
+  //   statusCode = 404;
+  //   response.writeHead(statusCode, headers);
+
+  //   response.end('Hello, World!'); 
+  // }
 
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
