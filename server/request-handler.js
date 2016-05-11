@@ -13,40 +13,59 @@ this file and include it in basic-server.js so that it actually works.
 **************************************************************/
 // // first do npm install request
 // var request = require('request');
-//  var fs = require('fs');
+//npm tesvar fs = require('fs');
 var http = require('http');
+var body = require('./body');
 //var results = [{roomname: 'room1', username: 'mala', message: 'hi' }]; 
+// exports.results = [];
+// exports.body = {results: this.results};
 
 exports.requestHandler = function(request, response) {
-  var results = []; 
-  var body = {results: results};
+  // var results = []; 
+  // var body = {results: results};
 
-  console.log('Serving request type ' + request.method + ' for url ' + request.url);
+ console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
   // The outgoing status.
   var statusCode = null;
-  
   var headers = defaultCorsHeaders;
 
-  headers['Content-Type'] = 'application/json';
+  if (request.method === 'OPTIONS') {
+    statusCode = 200; 
+    response.writeHead(statusCode, headers); 
+    response.end(); 
+  } 
 
+  
+
+  headers['Content-Type'] = 'application/json';
+  console.log(request.method, request.url);
+// if (request.url === '/classes/messages') {
   if (request.method === 'GET' && request.url === '/classes/messages') {
     statusCode = 200;
     response.writeHead(statusCode, headers);
-    response.end(JSON.stringify(body));
+    var newStorage = JSON.stringify(body.body);
+    response.end(newStorage);
 
-  } else if (request.method === 'POST' && request.url === '/classes/messages') {
+
+  } else if (request.method === 'POST') {
     var storage = [];
     request.on('data', function(chunk) {
       storage.push((chunk));  
       
-    }).on('end', function() {
-      storage = Buffer.concat(storage).toString();
+    });
+
+    request.on('end', function() {
+      //storage = Buffer.concat(storage).toString();
       //console.log(JSON.parse(body));
-      body.results.push(JSON.parse(storage));
+      console.log('POST', body.body.results[0]);
+
+      body.body.results.push(JSON.parse(storage));
       statusCode = 201;
       response.writeHead(statusCode, headers);
-      response.end(JSON.stringify(body));
+      //console.log(body.body.results[0]);
+      //response.end();
+      response.end(JSON.stringify(body.body));
      
     });
   } else {
@@ -55,8 +74,10 @@ exports.requestHandler = function(request, response) {
 
     response.end('Hello, World!'); 
   }
-  
+
+
 };
+
 
    
 
