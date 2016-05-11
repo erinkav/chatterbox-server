@@ -22,7 +22,10 @@ var app = {
     app.$chats.on('click', '.username', app.toggleFriend);
     app.$send.on('submit', app.handleSubmit);
     app.$roomSelect.on('change', app.saveRoom);
-
+    // $.ajax({
+    //   url: 'http://127.0.0.1:3000',
+    //   type: 'GET'
+    // }); 
     // Fetch previous messages
     app.startSpinner();
     app.fetch();

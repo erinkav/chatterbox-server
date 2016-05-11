@@ -13,7 +13,7 @@ this file and include it in basic-server.js so that it actually works.
 **************************************************************/
 // // first do npm install request
 // var request = require('request');
-//npm tesvar fs = require('fs');
+var fs = require('fs');
 var http = require('http');
 var body = require('./body');
 //var results = [{roomname: 'room1', username: 'mala', message: 'hi' }]; 
@@ -40,39 +40,48 @@ exports.requestHandler = function(request, response) {
 
   headers['Content-Type'] = 'application/json';
   console.log(request.method, request.url);
-// if (request.url === '/classes/messages') {
-  if (request.method === 'GET' && request.url === '/classes/messages') {
-    statusCode = 200;
-    response.writeHead(statusCode, headers);
-    var newStorage = JSON.stringify(body.body);
-    response.end(newStorage);
-
-
-  } else if (request.method === 'POST') {
-    var storage = [];
-    request.on('data', function(chunk) {
-      storage.push((chunk));  
-      
-    });
-
-    request.on('end', function() {
-      //storage = Buffer.concat(storage).toString();
-      //console.log(JSON.parse(body));
-      console.log('POST', body.body.results[0]);
-
-      body.body.results.push(JSON.parse(storage));
-      statusCode = 201;
+  if (request.url === '/classes/messages') {
+    if (request.method === 'GET') {
+      statusCode = 200;
       response.writeHead(statusCode, headers);
-      //console.log(body.body.results[0]);
-      //response.end();
-      response.end(JSON.stringify(body.body));
-     
-    });
-  } else {
-    statusCode = 404;
-    response.writeHead(statusCode, headers);
+      var newStorage = JSON.stringify(body.body);
+      response.end(newStorage);
 
-    response.end('Hello, World!'); 
+
+    } else if (request.method === 'POST') {
+      var storage = [];
+      request.on('data', function(chunk) {
+        storage.push((chunk));  
+        
+      });
+
+      request.on('end', function() {
+        //storage = Buffer.concat(storage).toString();
+        //console.log(JSON.parse(body));
+        console.log('POST', body.body.results[0]);
+
+        body.body.results.push(JSON.parse(storage));
+        statusCode = 201;
+        response.writeHead(statusCode, headers);
+        //console.log(body.body.results[0]);
+        //response.end();
+        response.end(JSON.stringify(body.body));
+       
+      });
+    } else {
+      statusCode = 404;
+      response.writeHead(statusCode, headers);
+
+      response.end('Hello, World!'); 
+    }
+  } else {
+    statusCode = 200; 
+    headers['Content-Type'] = 'text/html';
+
+    var html = fs.readFileSync('./client/index.html');
+    response.writeHead(statusCode, headers); 
+    response.write(html); 
+    response.end(); 
   }
 
 
